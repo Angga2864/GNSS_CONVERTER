@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GNSS Data Converter | DIDAN_MAGANG WKM 2025</title>
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --accent: #e74c3c;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+      --success: #27ae60;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+      min-height: 100vh;
+      position: relative;
+      padding-bottom: 60px; /* Ruang untuk footer */
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, var(--secondary), var(--accent));
+    }
+    
+    h2 {
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      position: relative;
+      padding-bottom: 10px;
+    }
+    
+    h2::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: var(--secondary);
+    }
+    
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    textarea, input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    textarea {
+      min-height: 150px; /* Diperkecil dari 200px */
+      max-height: 300px; /* Batas maksimum tinggi */
+      resize: vertical;
+      overflow-y: auto; /* Scroll jika konten panjang */
+    }
+    
+    textarea:focus, input:focus, select:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    button {
+      padding: 15px;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    button:hover {
+      background: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-process {
+      width: 100%;
+      margin: 15px 0;
+    }
+    
+    .btn-export {
+      width: 100%;
+      margin: 15px 0;
+      background: var(--success);
+    }
+    
+    .btn-export:hover {
+      background: #219653;
+    }
+    
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 30px 0;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    
+    th {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      padding: 12px;
+      text-align: left;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    
+    tr:hover {
+      background: #e9f7fe;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #eee;
+    }
+    
+    .footer a {
+      color: var(--secondary);
+      text-decoration: none;
+    }
+    
+    .input-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .filename-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .filename-group input {
+      flex: 1;
+    }
+    
+    .filename-group select {
+      width: 120px;
+    }
+    
+    .preview-section {
+      margin-top: 30px;
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+    }
+    
+    .export-section {
+      margin-top: 20px;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    
+    /* Container untuk preview dengan tinggi tetap dan scroll */
+    .preview-container {
+      max-height: 400px; /* Tinggi maksimum untuk preview */
+      overflow-y: auto; /* Scroll vertikal jika konten panjang */
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    
+    /* Style untuk upload file */
+    .file-upload {
+      margin-bottom: 15px;
+    }
+    
+    .file-upload-label {
+      display: block;
+      padding: 12px;
+      background: #f8f9fa;
+      border: 1px dashed #ddd;
+      border-radius: 5px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .file-upload-label:hover {
+      background: #e9f7fe;
+      border-color: var(--secondary);
+    }
+    
+    .file-upload-label i {
+      margin-right: 8px;
+      color: var(--secondary);
+    }
+    
+    .file-name {
+      margin-top: 5px;
+      font-size: 0.9rem;
+      color: #7f8c8d;
+    }
+    
+    #fileInput {
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .input-group, .filename-group, .button-group {
+        grid-template-columns: 1fr;
+      }
+      
+      .container {
+        padding: 20px;
+      }
+      
+      .filename-group {
+        flex-direction: column;
+      }
+      
+      .filename-group select {
+        width: 100%;
+      }
+      
+      .footer {
+        position: static; /* Footer normal di mobile */
+        margin-top: 20px;
+      }
+      
+      body {
+        padding-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>GNSS Data Converter</h2>
+    
+    <div class="file-upload">
+      <label for="fileInput" class="file-upload-label">
+        <i>📁</i> Upload File CSV atau Tempel Data di Bawah
+      </label>
+      <input type="file" id="fileInput" accept=".csv, .txt">
+      <div id="fileNameDisplay" class="file-name"></div>
+    </div>
+    
+    <label for="inputData">Tempel Data Mentah (dari Excel/CSV):</label>
+    <textarea id="inputData" rows="10" placeholder="Tempel data mentah dari Excel/CSV di sini..."></textarea>
+    
+    <div class="input-group">
+      <div>
+        <label for="customDate">Tanggal Pengukuran:</label>
+        <input type="date" id="customDate" value="2025-05-01">
+      </div>
+      <div>
+        <label for="surveyorName">Nama Surveyor:</label>
+        <input type="text" id="surveyorName" placeholder="Masukkan nama surveyor" value="">
+      </div>
+    </div>
+    
+    <button class="btn-process" onclick="processData()">
+      Proses Data
+    </button>
+    
+    <div class="preview-section">
+      <h3>Preview Hasil</h3>
+      <div class="preview-container"> <!-- Container baru untuk preview dengan scroll -->
+        <table id="outputTable">
+          <thead>
+            <tr>
+              <th>Kode</th>
+              <th>X</th>
+              <th>Y</th>
+              <th>Z</th>
+              <th>Nama</th>
+              <th>Tanggal</th>
+              <th>Surveyor</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="export-section">
+      <h3>Ekspor Data</h3>
+      <label for="fileName">Nama File Output:</label>
+      <div class="filename-group">
+        <input type="text" id="fileName" placeholder="Misal: data_gnss_20250501">
+        <select id="fileExtension">
+          <option value=".csv">.csv</option>
+          <option value=".txt">.txt</option>
+          <option value=".str">.str</option>
+        </select>
+      </div>
+      
+      <div class="button-group">
+        <button class="btn-export" onclick="exportData('csv')">
+          Ekspor ke CSV
+        </button>
+        <button class="btn-export" onclick="exportData('string')">
+          Ekspor ke String
+        </button>
+      </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    
+    <div class="footer">
+      <p>Dikembangkan oleh <strong>Didan Arisdya A P</strong> | Magang WKM 2025</p>
+    </div>
+  </div>
+
+  <script>
+    let processedData = [];
+    
+    // Fungsi untuk menangani upload file
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Tampilkan nama file
+      document.getElementById('fileNameDisplay').textContent = `File terpilih: ${file.name}`;
+      
+      // Baca isi file
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+        // Masukkan isi file ke textarea
+        document.getElementById('inputData').value = content;
+      };
+      reader.readAsText(file);
+    });
+    
+    function processData() {
+      const raw = document.getElementById("inputData").value.trim();
+      if (!raw) {
+        alert("Silakan tempel data mentah atau upload file terlebih dahulu!");
+        return;
+      }
+
+      const lines = raw.split("\n");
+      processedData = [];
+
+      // Tambahkan 2 baris dummy awal
+      const dummy = ['0','0','0','0','','',''];
+      processedData.push(dummy, dummy);
+
+      // Ambil tanggal yang dipilih dari input
+      const customDateInput = document.getElementById("customDate").value;
+      const customDate = formatDate(customDateInput);
+      
+      // Ambil nama surveyor dari input
+      const surveyorName = document.getElementById("surveyorName").value || "Raihan";
+
+      for (let i = 1; i < lines.length; i++) {
+        // Handle CSV yang menggunakan koma atau titik koma sebagai delimiter
+        const cols = lines[i].split(/\t|,|;/).map(col => col.trim());
+        const name = cols[1];
+        const x = cols[2];
+        const y = cols[3];
+        const z = cols[4];
+        const status = cols[13];
+
+        if (!name || !x || !y || !z) continue;
+
+        let kode = "0";
+        if (status === "Fix Pos") kode = "30003";
+        else if (status === "RTK Fix") kode = "6";
+
+        let cleanName = name;
+
+        // Jika nama bukan "T", "T1", dst. → normalisasi ke bentuk tanpa angka di akhir
+        if (!/^T\d*$/.test(name)) {
+          cleanName = name.replace(/(\d+)$/, "");
+        }
+
+        // Tambahkan spasi setelah angka di nama
+        cleanName = cleanName.replace(/(\d+)([A-Za-z]+)/, "$1 $2");
+
+        processedData.push([kode, x, y, z, cleanName, customDate, surveyorName]);
+      }
+
+      // Tambahkan 2 baris dummy akhir
+      processedData.push(dummy, ['0','0','0','end','','','']);
+
+      // Tampilkan di tabel HTML
+      updatePreviewTable();
+    }
+
+    function updatePreviewTable() {
+      const tbody = document.getElementById("outputTable").querySelector("tbody");
+      tbody.innerHTML = "";
+      processedData.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function formatDate(dateInput) {
+      const date = new Date(dateInput);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(2);
+
+      return `${day}/${month}/${year}`;
+    }
+
+    function exportData(format) {
+      if (processedData.length === 0) {
+        alert("Tidak ada data yang diproses. Silakan proses data terlebih dahulu!");
+        return;
+      }
+
+      let content, extension;
+      
+      if (format === 'string') {
+        // Format string khusus
+        content = "data:text/plain;charset=utf-8,";
+        processedData.forEach(row => {
+          content += row.join(" ") + "\n";
+        });
+        extension = ".str";
+      } else {
+        // Format CSV default
+        content = "data:text/csv;charset=utf-8,";
+        processedData.forEach(row => {
+          content += row.join(",") + "\n";
+        });
+        extension = document.getElementById("fileExtension").value;
+      }
+
+      // Get filename from input or use default
+      let fileName = document.getElementById("fileName").value.trim();
+      
+      if (!fileName) {
+        // If no filename provided, generate one based on current date and time
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+        const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+        fileName = `data_gnss_${dateStr}_${timeStr}`;
+      }
+      
+      // Ensure filename has the correct extension
+      if (!fileName.endsWith(extension)) {
+        fileName += extension;
+      }
+
+      // Create download link
+      const encodedUri = encodeURI(content);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
